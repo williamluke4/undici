@@ -770,8 +770,10 @@ test('invalid opts', (t) => {
   client[kEnqueue]({ path: '/', method: 'GET', signal: 1 }, (err) => {
     t.ok(err instanceof errors.InvalidArgumentError)
   })
-  client[kEnqueue]({ path: '/', method: 'GET', signal: {} }, (err) => {
-    t.ok(err instanceof errors.InvalidArgumentError)
+  client[kEnqueue]({ path: '/', method: 'GET', signal: {} }, {
+    onError(err) {
+      t.ok(err instanceof errors.InvalidArgumentError)
+    }
   })
   try {
     client[kEnqueue]({ path: '/', method: 'GET', signal: {} }, null)
