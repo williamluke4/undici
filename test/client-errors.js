@@ -764,11 +764,15 @@ test('invalid opts', (t) => {
   client.pipeline(null).on('error', (err) => {
     t.ok(err instanceof errors.InvalidArgumentError)
   })
-  client[kEnqueue](null, (err) => {
-    t.ok(err instanceof errors.InvalidArgumentError)
+  client[kEnqueue](null, {
+    onError(err) {
+      t.ok(err instanceof errors.InvalidArgumentError)
+    }
   })
-  client[kEnqueue]({ path: '/', method: 'GET', signal: 1 }, (err) => {
-    t.ok(err instanceof errors.InvalidArgumentError)
+  client[kEnqueue]({ path: '/', method: 'GET', signal: 1 }, {
+    onError(err) {
+      t.ok(err instanceof errors.InvalidArgumentError)
+    }
   })
   client[kEnqueue]({ path: '/', method: 'GET', signal: {} }, {
     onError(err) {
