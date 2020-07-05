@@ -57,12 +57,12 @@ test('pipeline echo', (t) => {
   })
 })
 
-test('pipeline invalid handler', (t) => {
+test('pipeline invalid factory', (t) => {
   t.plan(1)
 
   const client = new Client('http://localhost:5000')
   client.pipeline({}, null).on('error', (err) => {
-    t.ok(/handler/.test(err))
+    t.ok(/factory/.test(err))
   })
 })
 

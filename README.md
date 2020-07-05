@@ -277,18 +277,18 @@ function (req, res) {
 ```
 
 <a name='pipeline'></a>
-#### `client.pipeline(opts, handler(data))`
+#### `client.pipeline(opts, factory(data))`
 
 For easy use with [`stream.pipeline`](https://nodejs.org/api/stream.html#stream_stream_pipeline_source_transforms_destination_callback).
 
 Options:
 
 * ... same as [`client.request(opts, callback)`][request].
-* `objectMode`, `true` if the `handler` will return an object stream.
-* `opaque`, passed as `opaque` to `handler`. Used
+* `objectMode`, `true` if the `factory` will return an object stream.
+* `opaque`, passed as `opaque` to `factory`. Used
   to avoid creating a closure.
 
-The `data` parameter in `handler` is defined as follow:
+The `data` parameter in `factory` is defined as follow:
 
 * `statusCode`
 * `headers`
@@ -297,14 +297,14 @@ The `data` parameter in `handler` is defined as follow:
   either fully consume or destroy the body unless there is an error, or no further requests
   will be processed.
 
-`handler` should return a [`Readable`](https://nodejs.org/api/stream.html#stream_class_stream_readable) from which the result will be
+`factory` should return a [`Readable`](https://nodejs.org/api/stream.html#stream_class_stream_readable) from which the result will be
 read. Usually it should just return the `body` argument unless
 some kind of transformation needs to be performed based on e.g.
 `headers` or `statusCode`.
 
 `headers` is an object where all keys have been lowercased.
 
-The `handler` should validate the response and save any
+The `factory` should validate the response and save any
 required state. If there is an error it should be thrown.
 
 Returns a `Duplex` which writes to the request and reads from
