@@ -118,18 +118,11 @@ suite
     defer: true,
     fn: deferred => {
       Promise.all(new Array(PIPELINING).map(() => pool.stream(undiciOptions, () => {
-        const stream = new Writable({
+        return new Writable({
           write (chunk, encoding, callback) {
             callback()
           }
         })
-        stream.once('finish', () => {
-          if (--k === 0) {
-            deferred.resolve()
-          }
-        })
-
-        return stream
       }))).then(deferred)
     }
   })
