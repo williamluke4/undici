@@ -162,6 +162,9 @@ suite
   .add('undici - noop', {
     defer: true,
     fn: deferred => {
+      for (let n = 0; n < PIPELINING - 1; ++n) {
+        pool.dispatch(undiciOptions, new NoopRequest())
+      }
       pool.dispatch(undiciOptions, new NoopRequest(deferred))
     }
   })
@@ -188,7 +191,9 @@ class NoopRequest {
   }
 
   onComplete (trailers) {
-    this.deferred.resolve()
+    if (this.deferred) {
+      this.deferred.resolve()
+    }
   }
 }
 
