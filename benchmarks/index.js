@@ -43,77 +43,77 @@ const suite = new Benchmark.Suite()
 Benchmark.options.minSamples = 200
 
 suite
-  .add('http - keepalive', {
-    defer: true,
-    fn: deferred => {
-      let k = PIPELINING
-      for (let n = 0; n < k; ++n) {
-        http.get(httpOptions, response => {
-          const stream = new Writable({
-            write (chunk, encoding, callback) {
-              callback()
-            }
-          })
-          stream.once('finish', () => {
-            if (--k === 0) {
-              deferred.resolve()
-            }
-          })
+  // .add('http - keepalive', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     let k = PIPELINING
+  //     for (let n = 0; n < k; ++n) {
+  //       http.get(httpOptions, response => {
+  //         const stream = new Writable({
+  //           write (chunk, encoding, callback) {
+  //             callback()
+  //           }
+  //         })
+  //         stream.once('finish', () => {
+  //           if (--k === 0) {
+  //             deferred.resolve()
+  //           }
+  //         })
 
-          response.pipe(stream)
-        })
-      }
-    }
-  })
-  .add('undici - pipeline', {
-    defer: true,
-    fn: deferred => {
-      let k = PIPELINING
-      for (let n = 0; n < k; ++n) {
-        pool
-          .pipeline(undiciOptions, data => {
-            return data.body
-          })
-          .end()
-          .pipe(new Writable({
-            write (chunk, encoding, callback) {
-              callback()
-            }
-          }))
-          .once('finish', () => {
-            if (--k === 0) {
-              deferred.resolve()
-            }
-          })
-      }
-    }
-  })
-  .add('undici - request', {
-    defer: true,
-    fn: deferred => {
-      let k = PIPELINING
-      for (let n = 0; n < k; ++n) {
-        pool.request(undiciOptions, (error, { body }) => {
-          if (error) {
-            throw error
-          }
+  //         response.pipe(stream)
+  //       })
+  //     }
+  //   }
+  // })
+  // .add('undici - pipeline', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     let k = PIPELINING
+  //     for (let n = 0; n < k; ++n) {
+  //       pool
+  //         .pipeline(undiciOptions, data => {
+  //           return data.body
+  //         })
+  //         .end()
+  //         .pipe(new Writable({
+  //           write (chunk, encoding, callback) {
+  //             callback()
+  //           }
+  //         }))
+  //         .once('finish', () => {
+  //           if (--k === 0) {
+  //             deferred.resolve()
+  //           }
+  //         })
+  //     }
+  //   }
+  // })
+  // .add('undici - request', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     let k = PIPELINING
+  //     for (let n = 0; n < k; ++n) {
+  //       pool.request(undiciOptions, (error, { body }) => {
+  //         if (error) {
+  //           throw error
+  //         }
 
-          const stream = new Writable({
-            write (chunk, encoding, callback) {
-              callback()
-            }
-          })
-          stream.once('finish', () => {
-            if (--k === 0) {
-              deferred.resolve()
-            }
-          })
+  //         const stream = new Writable({
+  //           write (chunk, encoding, callback) {
+  //             callback()
+  //           }
+  //         })
+  //         stream.once('finish', () => {
+  //           if (--k === 0) {
+  //             deferred.resolve()
+  //           }
+  //         })
 
-          body.pipe(stream)
-        })
-      }
-    }
-  })
+  //         body.pipe(stream)
+  //       })
+  //     }
+  //   }
+  // })
   .add('undici - stream', {
     defer: true,
     fn: deferred => {
@@ -140,34 +140,34 @@ suite
       }
     }
   })
-  .add('undici - dispatch', {
-    defer: true,
-    fn: deferred => {
-      let k = PIPELINING
-      for (let n = 0; n < k; ++n) {
-        const stream = new Writable({
-          write (chunk, encoding, callback) {
-            callback()
-          }
-        })
-        stream.once('finish', () => {
-          if (--k === 0) {
-            deferred.resolve()
-          }
-        })
-        pool.dispatch(undiciOptions, new SimpleRequest(stream))
-      }
-    }
-  })
-  .add('undici - noop', {
-    defer: true,
-    fn: deferred => {
-      for (let n = 0; n < PIPELINING - 1; ++n) {
-        pool.dispatch(undiciOptions, new NoopRequest())
-      }
-      pool.dispatch(undiciOptions, new NoopRequest(deferred))
-    }
-  })
+  // .add('undici - dispatch', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     let k = PIPELINING
+  //     for (let n = 0; n < k; ++n) {
+  //       const stream = new Writable({
+  //         write (chunk, encoding, callback) {
+  //           callback()
+  //         }
+  //       })
+  //       stream.once('finish', () => {
+  //         if (--k === 0) {
+  //           deferred.resolve()
+  //         }
+  //       })
+  //       pool.dispatch(undiciOptions, new SimpleRequest(stream))
+  //     }
+  //   }
+  // })
+  // .add('undici - noop', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     for (let n = 0; n < PIPELINING - 1; ++n) {
+  //       pool.dispatch(undiciOptions, new NoopRequest())
+  //     }
+  //     pool.dispatch(undiciOptions, new NoopRequest(deferred))
+  //   }
+  // })
   .on('cycle', event => {
     console.log(String(event.target))
   })
