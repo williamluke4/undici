@@ -102,12 +102,13 @@ suite
             callback()
           }
         })
+          .on('finish', () => {
+            deferred.resolve()
+          })
       }, (err) => {
         if (err) {
           throw err
         }
-
-        deferred.resolve()
       })
     }
   })
