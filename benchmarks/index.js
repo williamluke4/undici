@@ -117,27 +117,20 @@ suite
   .add('undici - stream', {
     defer: true,
     fn: deferred => {
-      let k = PIPELINING
-      for (let n = 0; n < k; ++n) {
-        pool.stream(undiciOptions, () => {
-          const stream = new Writable({
-            write (chunk, encoding, callback) {
-              callback()
-            }
-          })
-          stream.once('finish', () => {
-            if (--k === 0) {
-              deferred.resolve()
-            }
-          })
-
-          return stream
-        }, error => {
-          if (error) {
-            throw error
+      Promise.all(new Array(PIPELINING).map(() => pool.stream(undiciOptions, () => {
+        const stream = new Writable({
+          write (chunk, encoding, callback) {
+            callback()
           }
         })
-      }
+        stream.once('finish', () => {
+          if (--k === 0) {
+            deferred.resolve()
+          }
+        })
+
+        return stream
+      }))).then(deferred)
     }
   })
   // .add('undici - dispatch', {
