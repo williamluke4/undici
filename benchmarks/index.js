@@ -32,9 +32,10 @@ const undiciOptions = {
   requestTimeout: 0
 }
 
+const PIPELINING = 10
 const pool = undici(`http://${httpOptions.hostname}:${httpOptions.port}`, {
   connections: 100,
-  pipelining: 10
+  pipelining: PIPELINING
 })
 
 const suite = new Benchmark.Suite()
@@ -45,92 +46,117 @@ suite
   .add('http - keepalive', {
     defer: true,
     fn: deferred => {
-      http.get(httpOptions, response => {
-        const stream = new Writable({
-          write (chunk, encoding, callback) {
-            callback()
-          }
-        })
-        stream.once('finish', () => {
-          deferred.resolve()
-        })
+      let k = PIPELINING
+      for (let n = 0; n < k; ++n) {
+        http.get(httpOptions, response => {
+          const stream = new Writable({
+            write (chunk, encoding, callback) {
+              callback()
+            }
+          })
+          stream.once('finish', () => {
+            if (--k === 0) {
+              deferred.resolve()
+            }
+          })
 
-        response.pipe(stream)
-      })
+          response.pipe(stream)
+        })
+      }
     }
   })
   .add('undici - pipeline', {
     defer: true,
     fn: deferred => {
-      pool
-        .pipeline(undiciOptions, data => {
-          return data.body
-        })
-        .end()
-        .pipe(new Writable({
-          write (chunk, encoding, callback) {
-            callback()
-          }
-        }))
-        .once('finish', () => {
-          deferred.resolve()
-        })
+      let k = PIPELINING
+      for (let n = 0; n < k; ++n) {
+        pool
+          .pipeline(undiciOptions, data => {
+            return data.body
+          })
+          .end()
+          .pipe(new Writable({
+            write (chunk, encoding, callback) {
+              callback()
+            }
+          }))
+          .once('finish', () => {
+            if (--k === 0) {
+              deferred.resolve()
+            }
+          })
+      }
     }
   })
   .add('undici - request', {
     defer: true,
     fn: deferred => {
-      pool.request(undiciOptions, (error, { body }) => {
-        if (error) {
-          throw error
-        }
-
-        const stream = new Writable({
-          write (chunk, encoding, callback) {
-            callback()
+      let k = PIPELINING
+      for (let n = 0; n < k; ++n) {
+        pool.request(undiciOptions, (error, { body }) => {
+          if (error) {
+            throw error
           }
-        })
-        stream.once('finish', () => {
-          deferred.resolve()
-        })
 
-        body.pipe(stream)
-      })
+          const stream = new Writable({
+            write (chunk, encoding, callback) {
+              callback()
+            }
+          })
+          stream.once('finish', () => {
+            if (--k === 0) {
+              deferred.resolve()
+            }
+          })
+
+          body.pipe(stream)
+        })
+      }
     }
   })
   .add('undici - stream', {
     defer: true,
     fn: deferred => {
-      pool.stream(undiciOptions, () => {
+      let k = PIPELINING
+      for (let n = 0; n < k; ++n) {
+        pool.stream(undiciOptions, () => {
+          const stream = new Writable({
+            write (chunk, encoding, callback) {
+              callback()
+            }
+          })
+          stream.once('finish', () => {
+            if (--k === 0) {
+              deferred.resolve()
+            }
+          })
+
+          return stream
+        }, error => {
+          if (error) {
+            throw error
+          }
+        })
+      }
+    }
+  })
+  .add('undici - dispatch', {
+    defer: true,
+    fn: deferred => {
+      let k = PIPELINING
+      for (let n = 0; n < k; ++n) {
         const stream = new Writable({
           write (chunk, encoding, callback) {
             callback()
           }
         })
         stream.once('finish', () => {
-          deferred.resolve()
+          if (--k === 0) {
+            deferred.resolve()
+          }
         })
-
-        return stream
-      }, error => {
-        if (error) {
-          throw error
-        }
-      })
-    }
-  })
-  .add('undici - dispatch', {
-    defer: true,
-    fn: deferred => {
-      const stream = new Writable({
-        write (chunk, encoding, callback) {
-          callback()
-        }
-      })
-      stream.once('finish', () => {
-        deferred.resolve()
-      })
-      pool.dispatch(undiciOptions, new SimpleRequest(stream))
+        pool.dispatch(undiciOptions, new SimpleRequest(stream))
+      }
     }
   })
   .add('undici - noop', {
