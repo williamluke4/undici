@@ -49,9 +49,6 @@ suite
               callback()
             }
           }))
-          .on('finish', () => {
-            deferred.resolve()
-          })
       })
     }
   })
