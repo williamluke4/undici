@@ -163,9 +163,11 @@ class SimpleRequest {
     this.dst = new Writable({
       write (chunk, encoding, callback) {
         callback()
+      },
+      final (callback) {
+        deferred.resolve()
+        callback()
       }
-    }).on('finish', () => {
-      deferred.resolve()
     })
   }
 
