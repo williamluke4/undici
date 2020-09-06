@@ -43,6 +43,10 @@ suite
           .pipe(new Writable({
             write (chunk, encoding, callback) {
               callback()
+            },
+            final (callback) {
+              deferred.resolve()
+              callback()
             }
           }))
           .on('finish', () => {
@@ -62,11 +66,12 @@ suite
         .pipe(new Writable({
           write (chunk, encoding, callback) {
             callback()
+          },
+          final (callback) {
+            deferred.resolve()
+            callback()
           }
         }))
-        .on('finish', () => {
-          deferred.resolve()
-        })
     }
   })
   .add('undici - request', {
@@ -81,11 +86,12 @@ suite
           .pipe(new Writable({
             write (chunk, encoding, callback) {
               callback()
+            },
+            final (callback) {
+              deferred.resolve()
+              callback()
             }
           }))
-          .on('finish', () => {
-            deferred.resolve()
-          })
       })
     }
   })
@@ -96,11 +102,12 @@ suite
         return new Writable({
           write (chunk, encoding, callback) {
             callback()
+          },
+          final (callback) {
+            deferred.resolve()
+            callback()
           }
         })
-          .on('finish', () => {
-            deferred.resolve()
-          })
       }, (err) => {
         if (err) {
           throw err
