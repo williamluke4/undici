@@ -42,80 +42,80 @@ const suite = new Benchmark.Suite()
 Benchmark.options.minSamples = 200
 
 suite
-  .add('http - keepalive', {
-    defer: true,
-    fn: deferred => {
-      Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
-        http.get(httpOptions, (res) => {
-          res
-            .pipe(new Writable({
-              write (chunk, encoding, callback) {
-                callback()
-              }
-            }))
-            .on('close', resolve)
-        })
-      }))).then(() => deferred.resolve())
-    }
-  })
-  .add('undici - pipeline', {
-    defer: true,
-    fn: deferred => {
-      Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
-        client
-          .pipeline(undiciOptions, data => {
-            return data.body
-          })
-          .end()
-          .pipe(new Writable({
-            write (chunk, encoding, callback) {
-              callback()
-            }
-          }))
-          .on('close', resolve)
-      }))).then(() => deferred.resolve())
-    }
-  })
-  .add('undici - request', {
-    defer: true,
-    fn: deferred => {
-      Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
-        client
-          .request(undiciOptions)
-          .then(({ body }) => {
-            body
-              .pipe(new Writable({
-                write (chunk, encoding, callback) {
-                  callback()
-                }
-              }))
-              .on('close', resolve)
-          })
-      }))).then(() => deferred.resolve())
-    }
-  })
-  .add('undici - stream', {
-    defer: true,
-    fn: deferred => {
-      Promise.all(Array.from(Array(10)).map(() => {
-        return client.stream(undiciOptions, () => {
-          return new Writable({
-            write (chunk, encoding, callback) {
-              callback()
-            }
-          })
-        })
-      })).then(() => deferred.resolve())
-    }
-  })
-  .add('undici - dispatch', {
-    defer: true,
-    fn: deferred => {
-      Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
-        client.dispatch(undiciOptions, new SimpleRequest(resolve))
-      }))).then(() => deferred.resolve())
-    }
-  })
+  // .add('http - keepalive', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
+  //       http.get(httpOptions, (res) => {
+  //         res
+  //           .pipe(new Writable({
+  //             write (chunk, encoding, callback) {
+  //               callback()
+  //             }
+  //           }))
+  //           .on('close', resolve)
+  //       })
+  //     }))).then(() => deferred.resolve())
+  //   }
+  // })
+  // .add('undici - pipeline', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
+  //       client
+  //         .pipeline(undiciOptions, data => {
+  //           return data.body
+  //         })
+  //         .end()
+  //         .pipe(new Writable({
+  //           write (chunk, encoding, callback) {
+  //             callback()
+  //           }
+  //         }))
+  //         .on('close', resolve)
+  //     }))).then(() => deferred.resolve())
+  //   }
+  // })
+  // .add('undici - request', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
+  //       client
+  //         .request(undiciOptions)
+  //         .then(({ body }) => {
+  //           body
+  //             .pipe(new Writable({
+  //               write (chunk, encoding, callback) {
+  //                 callback()
+  //               }
+  //             }))
+  //             .on('close', resolve)
+  //         })
+  //     }))).then(() => deferred.resolve())
+  //   }
+  // })
+  // .add('undici - stream', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     Promise.all(Array.from(Array(10)).map(() => {
+  //       return client.stream(undiciOptions, () => {
+  //         return new Writable({
+  //           write (chunk, encoding, callback) {
+  //             callback()
+  //           }
+  //         })
+  //       })
+  //     })).then(() => deferred.resolve())
+  //   }
+  // })
+  // .add('undici - dispatch', {
+  //   defer: true,
+  //   fn: deferred => {
+  //     Promise.all(Array.from(Array(10)).map(() => new Promise((resolve) => {
+  //       client.dispatch(undiciOptions, new SimpleRequest(resolve))
+  //     }))).then(() => deferred.resolve())
+  //   }
+  // })
   .add('undici - noop', {
     defer: true,
     fn: deferred => {
